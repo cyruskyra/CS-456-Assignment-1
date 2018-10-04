@@ -4,36 +4,6 @@ import sys
 import socket
 
 
-def main(req_code):
-    """Negotiates a random port with clients to transact messages.
-
-    Creates an UDP negotiation socket and waits for clients to initiate
-    a negotiation. Checks if client sent the correct request code, and
-    then creates a TCP transaction socket if so. Receives a message from
-    the client, reverses it, sends it back, then continues listening for
-    new negotiation initiations.
-    
-    Args:
-        req_code: the request code determined by the user.
-    """
-    n_socket = create_socket(SOCK_DGRAM, "SERVER_PORT")
-    while True:
-        r_socket = udp_negotiation(n_socket, req_code)
-        tcp_transaction(r_socket)
-
-
-if __name__ == "__main__":
-    try:
-        req_code = sys.argv[1]
-    except IndexError:
-        print "MISSING REQUEST CODE PARAMETER, TRY AGAIN"
-        sys.exit(1)
-    if not isinstance(req_code, int):
-        print "REQUEST CODE MUST BE INTEGER, TRY AGAIN"
-        sys.exit(1)
-    main(req_code)
-
-
 def create_socket(socket_type, name_of_port):
     """Returns a socket on a random unoccupied port.
 
@@ -44,13 +14,13 @@ def create_socket(socket_type, name_of_port):
     Returns:
         new_socket: a new socket of type socket_type.
     """
-    new_socket = socket.socket(AF_INET, socket_type)
+    new_socket = socket.socket(socket.AF_INET, socket_type)
     new_socket.bind(("", 0))
     print ("{}={}".format(name_of_port, new_socket.getsockname()[1]))
     return new_socket
 
 
-def udp_negotiation(n_socket, req_code):
+def server_udp_negotiation(n_socket, req_code):
     """Processes client request, and creates transaction socket if verified.
 
     Waits for client on n_socket to initiate negotiation with a request code.
@@ -71,7 +41,7 @@ def udp_negotiation(n_socket, req_code):
         client_req_code, client_address = n_socket.recvfrom(1024)
         if client_req_code == req_code:
             print("CLIENT REQUEST CODE VERIFIED")
-            r_socket = create_socket(SOCK_STREAM, "SERVER_TCP_PORT")
+            r_socket = create_socket(socket.SOCK_STREAM, "SERVER_TCP_PORT")
             n_socket.sendto(str(r_socket.getsockname()[1]), client_address)
             client_r_port, clientAddress = n_socket.recvfrom(1024)
             if client_r_port == str(r_socket.getsockname()[1]):
@@ -83,9 +53,10 @@ def udp_negotiation(n_socket, req_code):
                 n_socket.sendto("no", client_address)
         else:
             print("CLIENT REQUEST CODE INVALID")
+            n_socket.sendto(-1, client_address)
 
 
-def tcp_transaction(r_socket):
+def server_tcp_transaction(r_socket):
     """Reverses a message from the client and sends it back.
 
     Waits for client on r_socket to send a message containing a string.
@@ -104,3 +75,33 @@ def tcp_transaction(r_socket):
     connection_socket.send(reversed_msg)
     connection_socket.close()
     r_socket.close()
+
+
+def main():
+    """Negotiates a random port with clients to transact messages.
+
+    Creates an UDP negotiation socket and waits for clients to initiate
+    a negotiation. Checks if client sent the correct request code, and
+    then creates a TCP transaction socket if so. Receives a message from
+    the client, reverses it, sends it back, then continues listening for
+    new negotiation initiations.
+
+    Args:
+        req_code: the request code determined by the user.
+    """
+    try:
+        req_code = int(sys.argv[1])
+    except IndexError:
+        print("MISSING REQUEST CODE PARAMETER, TRY AGAIN")
+        sys.exit(1)
+    except ValueError:
+        print("REQUEST CODE MUST BE INTEGER, TRY AGAIN")
+        sys.exit(1)
+    n_socket = create_socket(socket.SOCK_DGRAM, "SERVER_PORT")
+    while True:
+        r_socket = server_udp_negotiation(n_socket, req_code)
+        server_tcp_transaction(r_socket)
+
+
+if __name__ == "__main__":
+    main()
