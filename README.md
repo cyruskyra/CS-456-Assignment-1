@@ -5,23 +5,23 @@ The goal of this assignment is to gain experience with both UDP and TCP socket p
 ## How to run the program
 
 Start the server first. First, in your server machine, navigate to the "source" folder of this project:
-'''
+```
 cd ./source
-'''
+```
 Then, in your terminal, enter:
-'''
+```
 chmod +x ./server.sh
 ./server.sh <REQ_CODE>
-'''
+```
 where 
 * <REQ_CODE> is the request code that client requests will be checked against.
 Take note of the stdout in the terminal: the SERVER_PORT is the <N_PORT> to enter in the client command line arguments in the next step.
 
 Once the server has started, start the client. In your client machine, navigate to the "source" folder of this project. Then, in your terminal, enter:
-'''
+```
 chmod +x ./client.sh
 ./client.sh <SERVER_ADDRESS> <N_PORT> <REQ_CODE> <MSG>
-'''
+```
 where 
 * <SERVER_ADDRESS> is the address of the server to contact;
 * <N_PORT> is the port to negotiate with the server on;
