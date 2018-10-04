@@ -26,7 +26,7 @@ where
 * <SERVER_ADDRESS> is the address of the server to contact;
 * <N_PORT> is the port to negotiate with the server on;
 * <REQ_CODE> is the client request code for negotiation; and
-* <MSG> is the message to be sent to the server for reversing.
+* <M SG> is the message to be sent to the server for reversing.
 
 If the client and server request codes are the same, the client will send <MSG> to the server and recieve it back reversed.
 
